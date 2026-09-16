@@ -36,6 +36,14 @@
         6,
         7
       ]
+    },
+    "history": {
+      "cycle": 0,
+      "used": [
+        0,
+        1,
+        2
+      ]
     }
   },
   "photos": {
@@ -57,14 +65,18 @@
       13,
       14,
       15,
-      16
+      16,
+      17,
+      18,
+      19
     ]
   },
   "tails": {
     "english": 3,
     "russian": 0,
     "general": 1,
-    "gdz": 2
+    "gdz": 2,
+    "history": 0
   },
-  "music": 2
+  "music": 0
 }
