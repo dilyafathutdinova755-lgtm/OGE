@@ -11,7 +11,7 @@ import pathlib
 
 STATE_PATH = pathlib.Path(__file__).resolve().parent.parent / "data" / "state.json"
 
-GROUPS = ("english", "russian", "general", "gdz", "history")
+GROUPS = ("english", "russian", "general", "gdz", "history", "physics")
 
 
 def _default_state() -> dict:

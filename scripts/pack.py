@@ -10,6 +10,7 @@ GROUP_LABELS = {
     "general": "ОБЩЕЕ",
     "gdz": "ГДЗ",
     "history": "ИСТОРИЯ",
+    "physics": "ФИЗИКА",
 }
 
 DEFAULT_SIZE_LIMIT_MB = 35
