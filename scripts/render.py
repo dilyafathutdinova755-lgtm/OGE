@@ -24,12 +24,18 @@ HOOKS_DIR = ROOT / "data" / "hooks"
 TAIL_DIR = ROOT / "assets" / "tail"
 AUDIO_DIR = ROOT / "assets" / "audio"
 
-HOOK_SEGMENT_DURATION = 6.0
-HOOK_SEGMENT_FRAMES = 360  # 6.00s @ 60fps
+DEFAULT_HOOK_DURATION = 6.0
 FPS = 60
 TARGET_TOTAL_DURATION = 15.02
 TEXT_FADE_START = 0.5
 TEXT_FADE_DURATION = 0.4
+
+# Groups where the tail clip ends on something that must not get cut off
+# (e.g. the App Store screen). For these, the hook segment shrinks below
+# DEFAULT_HOOK_DURATION as needed so the *whole* tail clip plays out within
+# the music track's length, down to MIN_HOOK_DURATION.
+FLEXIBLE_HOOK_GROUPS = {"gdz"}
+MIN_HOOK_DURATION = 3.0
 
 VIDEO_CODEC_ARGS = ["-c:v", "libx264", "-profile:v", "high", "-pix_fmt", "yuv420p", "-r", str(FPS)]
 AUDIO_CODEC_ARGS = ["-c:a", "aac", "-b:a", "192k", "-ar", "44100", "-ac", "2"]
@@ -59,16 +65,18 @@ def load_hook_pool(group: str) -> list[str]:
     return json.loads((HOOKS_DIR / f"{group}.json").read_text(encoding="utf-8"))
 
 
-def render_hook_segment(photo_path: pathlib.Path, hook_text: str, out_path: pathlib.Path, tmp_dir: pathlib.Path) -> None:
+def render_hook_segment(photo_path: pathlib.Path, hook_text: str, out_path: pathlib.Path,
+                         tmp_dir: pathlib.Path, duration: float) -> None:
     overlay_img, _ = build_overlay(photo_path, hook_text)
     overlay_path = tmp_dir / "overlay.png"
     overlay_img.save(overlay_path)
 
+    frames = max(2, round(duration * FPS))
     bg_chain = (
         f"scale={CANVAS_W}:{CANVAS_H}:force_original_aspect_ratio=increase,"
         f"crop={CANVAS_W}:{CANVAS_H},"
         f"scale={CANVAS_W * 4}:{CANVAS_H * 4}:flags=lanczos,"
-        f"zoompan=z='1+0.08*on/{HOOK_SEGMENT_FRAMES - 1}':d={HOOK_SEGMENT_FRAMES}:s={CANVAS_W}x{CANVAS_H}:fps={FPS},"
+        f"zoompan=z='1+0.08*on/{frames - 1}':d={frames}:s={CANVAS_W}x{CANVAS_H}:fps={FPS},"
         f"format=yuv420p[bg]"
     )
     ov_chain = (
@@ -79,11 +87,11 @@ def render_hook_segment(photo_path: pathlib.Path, hook_text: str, out_path: path
 
     cmd = [
         "ffmpeg", "-y",
-        "-loop", "1", "-t", str(HOOK_SEGMENT_DURATION), "-i", str(photo_path),
-        "-loop", "1", "-t", str(HOOK_SEGMENT_DURATION), "-i", str(overlay_path),
+        "-loop", "1", "-t", str(duration), "-i", str(photo_path),
+        "-loop", "1", "-t", str(duration), "-i", str(overlay_path),
         "-filter_complex", filter_complex,
         "-map", "[outv]",
-        "-t", str(HOOK_SEGMENT_DURATION),
+        "-t", str(duration),
         *VIDEO_CODEC_ARGS, "-an",
         str(out_path),
     ]
@@ -140,8 +148,18 @@ def render_one(group: str, state: StateStore, out_path: pathlib.Path) -> None:
 
     music_duration = probe_duration(music_path)
     target_total = min(TARGET_TOTAL_DURATION, music_duration)
-    tail_duration = max(0.0, target_total - HOOK_SEGMENT_DURATION)
-    tail_duration = min(tail_duration, probe_duration(tail_path))
+    tail_source_duration = probe_duration(tail_path)
+
+    if group in FLEXIBLE_HOOK_GROUPS:
+        # Shrink the hook (down to MIN_HOOK_DURATION) so the tail clip plays
+        # out in full whenever the music track allows it - the tail ends on
+        # the app's own promo/App Store screen and must not get cut short.
+        tail_duration = min(tail_source_duration, max(0.0, target_total - MIN_HOOK_DURATION))
+        hook_duration = target_total - tail_duration
+    else:
+        hook_duration = DEFAULT_HOOK_DURATION
+        tail_duration = max(0.0, target_total - hook_duration)
+        tail_duration = min(tail_duration, tail_source_duration)
 
     with tempfile.TemporaryDirectory(prefix="render_") as tmp:
         tmp_dir = pathlib.Path(tmp)
@@ -149,7 +167,7 @@ def render_one(group: str, state: StateStore, out_path: pathlib.Path) -> None:
         tail_seg = tmp_dir / "tail.mp4"
         concat_out = tmp_dir / "concat.mp4"
 
-        render_hook_segment(photo_path, hook_text, hook_seg, tmp_dir)
+        render_hook_segment(photo_path, hook_text, hook_seg, tmp_dir, hook_duration)
         if tail_duration > 0:
             render_tail_segment(tail_path, tail_duration, tail_seg)
             concat_segments(hook_seg, tail_seg, concat_out, tmp_dir)
