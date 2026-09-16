@@ -8,11 +8,10 @@ from __future__ import annotations
 
 import json
 import pathlib
-from dataclasses import dataclass, field
 
 STATE_PATH = pathlib.Path(__file__).resolve().parent.parent / "data" / "state.json"
 
-GROUPS = ("english", "russian", "general")
+GROUPS = ("english", "russian", "general", "gdz")
 
 
 def _default_state() -> dict:
@@ -29,8 +28,15 @@ class StateStore:
         self.path = path
         if self.path.exists():
             self.data = json.loads(self.path.read_text(encoding="utf-8"))
+            self._migrate_groups()
         else:
             self.data = _default_state()
+
+    def _migrate_groups(self) -> None:
+        """Fill in defaults for groups added after this journal was first written."""
+        for g in GROUPS:
+            self.data["hooks"].setdefault(g, {"cycle": 0, "used": []})
+            self.data["tails"].setdefault(g, 0)
 
     def save(self) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)

@@ -8,6 +8,7 @@ GROUP_LABELS = {
     "english": "АНГЛИЙСКИЙ",
     "russian": "РУССКИЙ",
     "general": "ОБЩЕЕ",
+    "gdz": "ГДЗ",
 }
 
 DEFAULT_SIZE_LIMIT_MB = 35

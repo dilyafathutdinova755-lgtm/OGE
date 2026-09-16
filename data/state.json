@@ -23,6 +23,12 @@
         1,
         2
       ]
+    },
+    "gdz": {
+      "cycle": 0,
+      "used": [
+        0
+      ]
     }
   },
   "photos": {
@@ -36,13 +42,15 @@
       5,
       6,
       7,
-      8
+      8,
+      9
     ]
   },
   "tails": {
     "english": 3,
     "russian": 0,
-    "general": 1
+    "general": 1,
+    "gdz": 1
   },
-  "music": 4
+  "music": 0
 }
