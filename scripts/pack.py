@@ -9,6 +9,7 @@ GROUP_LABELS = {
     "russian": "РУССКИЙ",
     "general": "ОБЩЕЕ",
     "gdz": "ГДЗ",
+    "history": "ИСТОРИЯ",
 }
 
 DEFAULT_SIZE_LIMIT_MB = 35
