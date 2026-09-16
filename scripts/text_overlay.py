@@ -15,11 +15,11 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 
 CANVAS_W, CANVAS_H = 1080, 1920
-SIDE_MARGIN = 90
+SIDE_MARGIN = 150
 MAX_LINES = 4
-MAX_FONT_SIZE = 132
-MIN_FONT_SIZE = 44
-LINE_SPACING = 1.18
+MAX_FONT_SIZE = 66
+MIN_FONT_SIZE = 32
+LINE_SPACING = 1.02
 
 
 def cover_crop(img: Image.Image, target_w: int, target_h: int) -> Image.Image:
