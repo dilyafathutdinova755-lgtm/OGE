@@ -184,8 +184,9 @@ def render_one(group: str, state: StateStore, out_path: pathlib.Path) -> None:
 def cmd_batch(args: argparse.Namespace) -> None:
     state = StateStore()
     out_root = pathlib.Path(args.out_dir)
+    groups = args.groups.split(",") if args.groups else list(GROUPS)
     archives = []
-    for group in GROUPS:
+    for group in groups:
         print(f"[{group}]")
         video_paths = []
         for i in range(1, args.per_group + 1):
@@ -216,9 +217,10 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
 
-    p_batch = sub.add_parser("batch", help="Плановая партия: N роликов на каждую из трёх групп")
+    p_batch = sub.add_parser("batch", help="Плановая партия: N роликов на каждую активную группу")
     p_batch.add_argument("--per-group", type=int, required=True)
     p_batch.add_argument("--out-dir", default="out/batch")
+    p_batch.add_argument("--groups", help=f"Через запятую, по умолчанию все: {','.join(GROUPS)}")
     p_batch.set_defaults(func=cmd_batch)
 
     p_adhoc = sub.add_parser("adhoc", help="Внеплановая мини-партия для одной группы")
