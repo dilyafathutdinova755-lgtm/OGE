@@ -38,7 +38,10 @@
         8,
         9,
         10,
-        11
+        11,
+        12,
+        13,
+        14
       ]
     },
     "gdz": {
@@ -211,17 +214,20 @@
       13,
       14,
       15,
-      16
+      16,
+      17,
+      18,
+      19
     ]
   },
   "tails": {
     "english": 1,
     "russian": 0,
-    "general": 0,
+    "general": 1,
     "gdz": 2,
     "history": 0,
     "physics": 0,
     "chemistry": 0
   },
-  "music": 1
+  "music": 4
 }
